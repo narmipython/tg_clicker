@@ -12,6 +12,8 @@
       width: 100%;
       font-family: Arial, sans-serif;
       overflow: hidden;
+      background: #000;
+      color: #fff;
     }
 
     /* Loading screen */
@@ -32,7 +34,6 @@
       transition: opacity 0.5s ease;
     }
 
-    /* Spinner animation */
     .spinner {
       border: 8px solid #333;
       border-top: 8px solid #fff;
@@ -48,30 +49,61 @@
       100% { transform: rotate(360deg); }
     }
 
-    /* Main screen */
-    #main {
-      display: none;
-      background-color: #000;
-      color: #fff;
+    /* Main container for screens */
+    #slider {
+      display: flex;
       height: 100%;
-      width: 100%;
+      width: 300%;
+      transition: transform 0.5s ease;
+    }
+
+    .screen {
+      flex: 1 0 100%;
       display: flex;
       align-items: center;
       justify-content: center;
       flex-direction: column;
     }
 
-    /* Circle button */
+    /* Buttons bar */
+    #bottomBar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: rgba(20, 20, 20, 0.95);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding: 10px 0;
+      border-top: 1px solid #333;
+    }
+
+    .navBtn {
+      flex: 1;
+      text-align: center;
+      color: #fff;
+      font-size: 18px;
+      cursor: pointer;
+      user-select: none;
+      transition: color 0.3s ease;
+    }
+
+    .navBtn.active {
+      color: #00ff88;
+    }
+
+    /* Circle click button */
     #circleBtn {
-      width: 150px;
-      height: 150px;
+      width: 160px;
+      height: 160px;
       border-radius: 50%;
       background-color: #1e1e1e;
       display: flex;
       align-items: center;
       justify-content: center;
       color: #fff;
-      font-size: 18px;
+      font-size: 20px;
       cursor: pointer;
       user-select: none;
       transition: transform 0.3s ease;
@@ -81,7 +113,6 @@
       background-color: #333;
     }
 
-    /* Shrink and grow once */
     .shrink-grow {
       animation: shrinkGrow 0.4s ease-in-out 1 forwards;
     }
@@ -97,30 +128,98 @@
 
   <div id="loading">
     <div class="spinner"></div>
-    KOVAKOV Kombat: Fight for 100 ping
+    KOBAKOV Kombat: Fight for 100 ping
   </div>
 
-  <div id="main">
-    <div id="circleBtn">Click Me</div>
+  <!-- Main screens container -->
+  <div id="main" style="display: none;">
+    <div id="slider">
+      <!-- Left screen -->
+      <div class="screen" id="shopScreen">
+        <h1>🏪 Shop</h1>
+        <p>Coming soon...</p>
+      </div>
+
+      <!-- Middle screen -->
+      <div class="screen" id="clickScreen">
+        <div id="circleBtn">Click</div>
+      </div>
+
+      <!-- Right screen -->
+      <div class="screen" id="upgradeScreen">
+        <h1>⚙️ Upgrade</h1>
+        <p>Upgrade your power per click here!</p>
+      </div>
+    </div>
+
+    <!-- Bottom buttons -->
+    <div id="bottomBar">
+      <div class="navBtn" id="btnShop">Shop</div>
+      <div class="navBtn active" id="btnClick">Click</div>
+      <div class="navBtn" id="btnUpgrade">Upgrade</div>
+    </div>
   </div>
 
   <script>
-    // Show main screen after loading
+    // Loading
     window.addEventListener('load', () => {
       setTimeout(() => {
         document.getElementById('loading').style.opacity = 0;
         setTimeout(() => {
           document.getElementById('loading').style.display = 'none';
-          document.getElementById('main').style.display = 'flex';
+          document.getElementById('main').style.display = 'block';
         }, 500);
-      }, 1500); // loading screen duration
+      }, 1500);
+    });
+
+    // Slider control
+    const slider = document.getElementById('slider');
+    const navBtns = document.querySelectorAll('.navBtn');
+    let currentIndex = 1; // Start at middle (Click screen)
+
+    function updateSlider() {
+      slider.style.transform = `translateX(-${currentIndex * 100}%)`;
+      navBtns.forEach(btn => btn.classList.remove('active'));
+      if (currentIndex === 0) document.getElementById('btnShop').classList.add('active');
+      if (currentIndex === 1) document.getElementById('btnClick').classList.add('active');
+      if (currentIndex === 2) document.getElementById('btnUpgrade').classList.add('active');
+    }
+
+    document.getElementById('btnShop').addEventListener('click', () => {
+      currentIndex = 0;
+      updateSlider();
+    });
+    document.getElementById('btnClick').addEventListener('click', () => {
+      currentIndex = 1;
+      updateSlider();
+    });
+    document.getElementById('btnUpgrade').addEventListener('click', () => {
+      currentIndex = 2;
+      updateSlider();
+    });
+
+    // Swipe support (mobile & mouse)
+    let startX = 0;
+    slider.addEventListener('touchstart', e => startX = e.touches[0].clientX);
+    slider.addEventListener('touchend', e => {
+      const diff = e.changedTouches[0].clientX - startX;
+      if (diff > 50 && currentIndex > 0) currentIndex--;
+      if (diff < -50 && currentIndex < 2) currentIndex++;
+      updateSlider();
+    });
+
+    slider.addEventListener('mousedown', e => startX = e.clientX);
+    slider.addEventListener('mouseup', e => {
+      const diff = e.clientX - startX;
+      if (diff > 50 && currentIndex > 0) currentIndex--;
+      if (diff < -50 && currentIndex < 2) currentIndex++;
+      updateSlider();
     });
 
     // Click animation
     const circle = document.getElementById('circleBtn');
     circle.addEventListener('click', () => {
       circle.classList.add('shrink-grow');
-      // remove class after animation so it can be clicked again later if needed
       circle.addEventListener('animationend', () => {
         circle.classList.remove('shrink-grow');
       }, { once: true });
@@ -128,3 +227,4 @@
   </script>
 </body>
 </html>
+
